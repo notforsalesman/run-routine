@@ -8,7 +8,6 @@
   <!-- PWA manifest -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- Basic styling -->
   <style>
     body {
       margin: 0;
@@ -60,13 +59,15 @@
     <div id="result" class="card" style="display:none;"></div>
   </div>
 
-  <!-- Service Worker registration -->
   <script>
+    // Service Worker registration
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js")
-        .then(() => console.log("Service Worker registered"));
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW registration failed:", err));
     }
 
+    // Temporary button action
     document.getElementById("checkBtn").addEventListener("click", () => {
       document.getElementById("result").style.display = "block";
       document.getElementById("result").innerHTML = `
