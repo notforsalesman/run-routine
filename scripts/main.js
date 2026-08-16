@@ -6,13 +6,12 @@ async function getWeatherJMA() {
   const res = await fetch(JMA_URL);
   const data = await res.json();
 
-  // timeSeries[0] に今日・明日の天気が入っている
+  // 今日の天気（timeSeries[0]）
   const today = data[0].timeSeries[0].areas[0];
+  const weatherText = today.weathers[0];      // 日本語の天気
+  const weatherCode = today.weatherCodes[0];  // 数値コード（100=晴れ、200=曇り、300=雨）
 
-  const weatherText = today.weathers[0];      // 今日の天気（日本語）
-  const weatherCode = today.weatherCodes[0];  // 数値コード（200=曇り、100=晴れなど）
-
-  // 気温は timeSeries[2] に入っている
+  // 気温（timeSeries[2]）
   const temps = data[0].timeSeries[2].areas[0].temps;
   const tempToday = temps[0]; // 今日の最高気温
 
@@ -25,14 +24,8 @@ async function getWeatherJMA() {
 
 // ====== 今日のプランを判定 ======
 function decidePlanJMA(temp, weatherCode, weatherText) {
-  // weatherCode の例：
-  // 100 = 晴れ
-  // 200 = くもり
-  // 300 = 雨
-  // 400 = 雪
-
   if (weatherCode >= 300) {
-    return "今日は雨なので、完全休養。ストレッチだけでOK。";
+    return "今日は雨なので休養。ストレッチだけでOK。";
   }
 
   if (temp >= 30) {
@@ -74,3 +67,17 @@ async function showTodayPlan() {
 
 // ====== ボタンに紐付け ======
 document.getElementById("checkBtn").addEventListener("click", showTodayPlan);
+
+// ====== Periodic Sync（毎日1回通知） ======
+if ("serviceWorker" in navigator && "PeriodicSyncManager" in window) {
+  navigator.serviceWorker.ready.then(async (reg) => {
+    try {
+      await reg.periodicSync.register("daily-run-check", {
+        minInterval: 24 * 60 * 60 * 1000 // 1日
+      });
+      console.log("Periodic Sync registered");
+    } catch (e) {
+      console.log("Periodic Sync not allowed", e);
+    }
+  });
+}
