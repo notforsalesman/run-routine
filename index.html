@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Run Routine</title>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Basic styling -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f2f2f2;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    }
+
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="card">
+      <h2>Run Routine</h2>
+      <p>毎朝の天気に合わせてランニングプランを確認できます。</p>
+    </div>
+
+    <button id="checkBtn">Next → 今日のプランを見る</button>
+
+    <div id="result" class="card" style="display:none;"></div>
+  </div>
+
+  <!-- Service Worker registration -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("Service Worker registered"));
+    }
+
+    document.getElementById("checkBtn").addEventListener("click", () => {
+      document.getElementById("result").style.display = "block";
+      document.getElementById("result").innerHTML = `
+        <h3>今日のプラン</h3>
+        <p>ここに天気APIとロジックを組み込んで、毎朝のプランを表示します。</p>
+      `;
+    });
+  </script>
+</body>
+</html>
