@@ -1,4 +1,4 @@
-const CACHE_NAME = "runroutine-v3"; // ← バージョンを上げると古いキャッシュが消える
+const CACHE_NAME = "runroutine-v4"; // ← バージョンを上げると古いキャッシュが消える
 
 self.addEventListener("install", (event) => {
   console.log("Service Worker installed");
