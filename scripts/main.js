@@ -1,25 +1,37 @@
-// ====== 設定 ======
-const API_KEY = "YOUR_OPENWEATHER_API_KEY"; // ← 後で入れる
-const CITY = "Asaka"; // 朝霞市
-const COUNTRY = "JP";
+// ====== 気象庁API（埼玉県南部：110000） ======
+const JMA_URL = "https://www.jma.go.jp/bosai/forecast/data/forecast/110000.json";
 
 // ====== 今日の天気を取得 ======
-async function getWeather() {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${CITY},${COUNTRY}&appid=${API_KEY}&units=metric&lang=ja`;
-
-  const res = await fetch(url);
+async function getWeatherJMA() {
+  const res = await fetch(JMA_URL);
   const data = await res.json();
 
+  // timeSeries[0] に今日・明日の天気が入っている
+  const today = data[0].timeSeries[0].areas[0];
+
+  const weatherText = today.weathers[0];      // 今日の天気（日本語）
+  const weatherCode = today.weatherCodes[0];  // 数値コード（200=曇り、100=晴れなど）
+
+  // 気温は timeSeries[2] に入っている
+  const temps = data[0].timeSeries[2].areas[0].temps;
+  const tempToday = temps[0]; // 今日の最高気温
+
   return {
-    temp: data.main.temp,
-    weather: data.weather[0].main,
-    description: data.weather[0].description
+    weatherText,
+    weatherCode,
+    temp: tempToday
   };
 }
 
 // ====== 今日のプランを判定 ======
-function decidePlan(temp, weather) {
-  if (weather === "Rain") {
+function decidePlanJMA(temp, weatherCode, weatherText) {
+  // weatherCode の例：
+  // 100 = 晴れ
+  // 200 = くもり
+  // 300 = 雨
+  // 400 = 雪
+
+  if (weatherCode >= 300) {
     return "今日は雨なので、完全休養。ストレッチだけでOK。";
   }
 
@@ -27,11 +39,11 @@ function decidePlan(temp, weather) {
     return "暑いので、坂道ウォーク＋短時間ジョグ（20〜25分）。";
   }
 
-  if (weather === "Clouds") {
+  if (weatherCode >= 200) {
     return "曇りなので、ゆるジョグ30〜40分。心拍120〜135で疲労ゼロ。";
   }
 
-  if (weather === "Clear") {
+  if (weatherCode < 200) {
     return "晴れなので、ロング走12〜18km。ペースは6'30〜7'00/km。";
   }
 
@@ -43,13 +55,13 @@ async function showTodayPlan() {
   const result = document.getElementById("result");
 
   try {
-    const { temp, weather, description } = await getWeather();
-    const plan = decidePlan(temp, weather);
+    const { weatherText, weatherCode, temp } = await getWeatherJMA();
+    const plan = decidePlanJMA(temp, weatherCode, weatherText);
 
     result.style.display = "block";
     result.innerHTML = `
       <h3>今日の天気</h3>
-      <p>${description}（${temp}℃）</p>
+      <p>${weatherText}（最高気温 ${temp}℃）</p>
 
       <h3>今日のランニングプラン</h3>
       <p>${plan}</p>
@@ -62,4 +74,3 @@ async function showTodayPlan() {
 
 // ====== ボタンに紐付け ======
 document.getElementById("checkBtn").addEventListener("click", showTodayPlan);
-
